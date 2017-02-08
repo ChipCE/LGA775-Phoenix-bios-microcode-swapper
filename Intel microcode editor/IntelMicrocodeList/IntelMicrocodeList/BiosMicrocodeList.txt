@@ -1,0 +1,11 @@
+Bios file : C:\Users\Chip\Desktop\work\$image2R.usf
+
+CPUID=10677	Rev=705	2008/04/28  CRC=A6DB99DD  datasize=8144  total=8192  offset=76000     PlatformID=( 16):4
+CPUID=1067A	Rev=A07	2008/04/09  CRC=83067F5A  datasize=8144  total=8192  offset=78000     PlatformID=( 17):0,4
+CPUID=10676	Rev=60C	2008/01/19  CRC=FBAC0F6C  datasize=4048  total=4096  offset=7a000     PlatformID=(  1):0
+CPUID=6F7	Rev=66	2007/03/08  CRC=FEA82C68  datasize=4048  total=4096  offset=7b000     PlatformID=( 16):4
+CPUID=6FB	Rev=BA	2010/10/03  CRC=ED247070  datasize=4048  total=4096  offset=7c000     PlatformID=( 16):4
+CPUID=10661	Rev=38	2007/09/19  CRC=8A2D6F19  datasize=4048  total=4096  offset=7d000     PlatformID=(  1):0
+CPUID=6F6	Rev=CB	2007/09/16  CRC=6F5DFA09  datasize=4048  total=4096  offset=7e000     PlatformID=(  1):0
+CPUID=6FB	Rev=BA	2010/10/03  CRC=08707B60  datasize=4048  total=4096  offset=7f000     PlatformID=(  1):0
+CPUID=6FD	Rev=A3	2007/08/13  CRC=89C0D09E  datasize=4048  total=4096  offset=80000     PlatformID=(  1):0

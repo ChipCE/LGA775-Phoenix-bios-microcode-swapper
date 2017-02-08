@@ -1,0 +1,19 @@
+Microcode lib file : C:\Users\Chip\Desktop\work\ncpucode-lga-771-775-microcode-cpuid-1067x-6Fx.bin
+
+CPUID=6F2	Rev=5D	2010/10/02  CRC=9384A573  datasize=4048  total=4096  offset=0         PlatformID=(  1):0
+CPUID=6F6	Rev=D0	2010/09/30  CRC=B61EC71A  datasize=4048  total=4096  offset=1000      PlatformID=(  1):0
+CPUID=6F6	Rev=D2	2010/10/01  CRC=6618CFFF  datasize=4048  total=4096  offset=2000      PlatformID=(  4):2
+CPUID=6F7	Rev=6A	2010/10/02  CRC=9911AAF2  datasize=4048  total=4096  offset=3000      PlatformID=( 16):4
+CPUID=6F7	Rev=6B	2010/10/02  CRC=CC4DEED3  datasize=4048  total=4096  offset=4000      PlatformID=( 64):6
+CPUID=6FB	Rev=BA	2010/10/03  CRC=08707B60  datasize=4048  total=4096  offset=5000      PlatformID=(  1):0
+CPUID=6FB	Rev=BC	2010/10/03  CRC=9394765A  datasize=4048  total=4096  offset=6000      PlatformID=(  4):2
+CPUID=6FB	Rev=BA	2010/10/03  CRC=ED247070  datasize=4048  total=4096  offset=7000      PlatformID=( 16):4
+CPUID=6FB	Rev=BC	2010/10/03  CRC=F1A7A484  datasize=4048  total=4096  offset=8000      PlatformID=( 64):6
+CPUID=6FD	Rev=A4	2010/10/02  CRC=9ACE6116  datasize=4048  total=4096  offset=9000      PlatformID=(  1):0
+CPUID=10676	Rev=60F	2010/09/29  CRC=8FE1A246  datasize=4048  total=4096  offset=a000      PlatformID=(  1):0
+CPUID=10676	Rev=60F	2010/09/29  CRC=8FE1A243  datasize=4048  total=4096  offset=b000      PlatformID=(  4):2
+CPUID=10676	Rev=60F	2010/09/29  CRC=8FE1A237  datasize=4048  total=4096  offset=c000      PlatformID=( 16):4
+CPUID=10676	Rev=60F	2010/09/29  CRC=8FE1A207  datasize=4048  total=4096  offset=d000      PlatformID=( 64):6
+CPUID=10677	Rev=70A	2010/09/29  CRC=F3710DB6  datasize=4048  total=4096  offset=e000      PlatformID=( 16):4
+CPUID=1067A	Rev=A0B	2010/09/28  CRC=B007E7E3  datasize=8144  total=8192  offset=f000      PlatformID=( 17):0,4
+CPUID=1067A	Rev=A0B	2010/09/28  CRC=B007E7B0  datasize=8144  total=8192  offset=11000     PlatformID=( 68):2,6
