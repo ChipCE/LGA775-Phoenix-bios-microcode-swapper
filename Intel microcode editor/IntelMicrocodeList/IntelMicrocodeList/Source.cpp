@@ -3,7 +3,7 @@
 #include <string.h>
 #include <conio.h>
 
-#define VERSION_INFO "v1.1b 2017-02-02"
+#define VERSION_INFO "v1.4b 2017-02-09"
 #define BIOS_LOG_FILE "BiosMicrocodeList.txt"
 #define LIB_LOG_FILE "LibMicrocodeList.txt"
 #define TOS ""
@@ -60,7 +60,7 @@ int str_cpy(char*,char*);
 void showMenu()
 {
 	printf("Intel Microcode editor %s\n",VERSION_INFO);
-	printf("-----------------------------------------------------------------------------------------------------------------------------------------------------\n");
+	printf("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
 	printf("Bios file :\t");
 	if(biosLoaded)
 		printf("%s\n",biosFileName);
@@ -71,7 +71,7 @@ void showMenu()
 		printf("%s\n",libFileName);
 	else
 		printf("Not loaded\n");
-	printf("-----------------------------------------------------------------------------------------------------------------------------------------------------\n");
+	printf("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
 
 	printf("[1] Load bios file\n");
 	printf("[2] Display bios microcode list\n");
@@ -228,8 +228,8 @@ void showMicrocodeList()
 		printf("Rev=%02X\t",microCodeList[i].rev);
 		printf("%02X%02X/%02X/%02X  ",microCodeList[i].yf, microCodeList[i].yl, microCodeList[i].mm, microCodeList[i].dd);
 		printf("CRC=%08X  ",microCodeList[i].crc);
-		printf("datasize=%d  ", microCodeList[i].dataSize);
-		printf("total=%d  ",microCodeList[i].totalSize);
+		printf("datasize=%4d  ", microCodeList[i].dataSize);
+		printf("total=%4d  ",microCodeList[i].totalSize);
 		printf("PlatformID=(%3d):",microCodeList[i].platformId);
 			bool flag = false;
 			for (int j=0; j<=7; ++j)
@@ -331,20 +331,19 @@ bool loadBios()
 			&& (buf[i+10]>=0x01 && buf[i+10]<=0x09 || buf[i+10]>=0x10 && buf[i+10]<=0x19 || buf[i+10]>=0x20 && buf[i+10]<=0x29 || buf[i+10]>=0x30 && buf[i+10]<=0x31)
 			&& (buf[i+11]>=0x01 && buf[i+11]<=0x09 || buf[i+11]>=0x10 && buf[i+11]<=0x12)) 
 		{
-			entryCounter++;
-			printf("Entry No.%d\t",entryCounter);
-
-			MicroCode tmp;
-
 			int totalsize = *(unsigned int*)(&buf[i+32]);
-
-			//printf("datasize=%d totalsize=%d\n", *(unsigned int*)(&buf[i+28]), totalsize);
+			
 			if (totalsize == 0) totalsize = 2048;
 			if ((totalsize & 1023) != 0) continue;
 			if (i+totalsize > fsize) continue;
 			int j,sum=0;
 			for (j=0; j<totalsize; j+=4) sum += *(unsigned int*)(&buf[i+j]);
 			if (sum != 0) continue;
+
+			entryCounter++;
+			printf("Entry No.%d\t",entryCounter);
+
+			MicroCode tmp;
 
 			printf("CPUID=%X\t",*(unsigned int*)(&buf[i+12]));									fprintf(logFp,"CPUID=%X\t",*(unsigned int*)(&buf[i+12]));
 			tmp.cpuId=*(unsigned int*)(&buf[i+12]);
@@ -361,11 +360,15 @@ bool loadBios()
 			printf("CRC=%08X  ",*(unsigned int*)(&buf[i+16]));									fprintf(logFp,"CRC=%08X  ",*(unsigned int*)(&buf[i+16]));
 			tmp.crc=*(unsigned int*)(&buf[i+16]);
 
-			printf("datasize=%d  ", *(unsigned int*)(&buf[i+28]));								fprintf(logFp,"datasize=%d  ", *(unsigned int*)(&buf[i+28]));
+			printf("datasize=%4d  ", *(unsigned int*)(&buf[i+28]));								fprintf(logFp,"datasize=%4d  ", *(unsigned int*)(&buf[i+28]));
 			tmp.dataSize=*(unsigned int*)(&buf[i+28]);
 
-			printf("total=%d  ",*(unsigned int*)(&buf[i+32]));									fprintf(logFp,"total=%d  ",*(unsigned int*)(&buf[i+32]));
-			tmp.totalSize=*(unsigned int*)(&buf[i+32]);
+			//printf("total=%4d  ",*(unsigned int*)(&buf[i+32]));								//fprintf(logFp,"total=%4d  ",*(unsigned int*)(&buf[i+32]));
+			//tmp.totalSize=*(unsigned int*)(&buf[i+32]);
+
+			//totalsize
+			printf("total=%4d  ",totalsize);													fprintf(logFp,"total=%4d  ",totalsize);
+			tmp.totalSize=totalsize;
 
 			printf("offset=%-8X  ",i);															fprintf(logFp,"offset=%-8x  ",i);
 
@@ -454,7 +457,7 @@ bool editBios()
 			&& (clone[i+10]>=0x01 && clone[i+10]<=0x09 || clone[i+10]>=0x10 && clone[i+10]<=0x19 || clone[i+10]>=0x20 && clone[i+10]<=0x29 || clone[i+10]>=0x30 && clone[i+10]<=0x31)
 			&& (clone[i+11]>=0x01 && clone[i+11]<=0x09 || clone[i+11]>=0x10 && clone[i+11]<=0x12)) 
 		{
-			counter++;
+			
 			int totalsize = *(unsigned int*)(&clone[i+32]);
 			if (totalsize == 0) totalsize = 2048;
 			if ((totalsize & 1023) != 0) continue;
@@ -462,7 +465,9 @@ bool editBios()
 			int j,sum=0;
 			for (j=0; j<totalsize; j+=4) sum += *(unsigned int*)(&clone[i+j]);
 			if (sum != 0) continue;
-			
+
+			counter++;
+
 			if(
 				*(unsigned int*)(&clone[i+12])==editedBiosMicroCodeList[destChoice-1].cpuId
 				&&
@@ -564,7 +569,7 @@ bool editBios()
 					//update current database
 					updateDatabase();
 
-					printf("\nOperation successed!");
+					printf("\nOperation successed!\n");
 					printf("\nPress any key to continue.\n");
 					_getch();
 					system("cls");
@@ -600,8 +605,8 @@ void showEditedBios()
 		printf("Rev=%02X\t",editedBiosMicroCodeList[i].rev);
 		printf("%02X%02X/%02X/%02X  ",editedBiosMicroCodeList[i].yf, editedBiosMicroCodeList[i].yl, editedBiosMicroCodeList[i].mm, editedBiosMicroCodeList[i].dd);
 		printf("CRC=%08X  ",editedBiosMicroCodeList[i].crc);
-		printf("datasize=%d  ", editedBiosMicroCodeList[i].dataSize);
-		printf("total=%d  ",editedBiosMicroCodeList[i].totalSize);
+		printf("datasize=%4d  ", editedBiosMicroCodeList[i].dataSize);
+		printf("total=%4d  ",editedBiosMicroCodeList[i].totalSize);
 		printf("PlatformID=(%3d):",editedBiosMicroCodeList[i].platformId);
 			bool flag = false;
 			for (int j=0; j<=7; ++j)
@@ -634,7 +639,6 @@ void updateDatabase()
 			&& (clone[i+10]>=0x01 && clone[i+10]<=0x09 || clone[i+10]>=0x10 && clone[i+10]<=0x19 || clone[i+10]>=0x20 && clone[i+10]<=0x29 || clone[i+10]>=0x30 && clone[i+10]<=0x31)
 			&& (clone[i+11]>=0x01 && clone[i+11]<=0x09 || clone[i+11]>=0x10 && clone[i+11]<=0x12)) 
 		{
-			counter++;
 			int totalsize = *(unsigned int*)(&clone[i+32]);
 			if (totalsize == 0) totalsize = 2048;
 			if ((totalsize & 1023) != 0) continue;
@@ -642,6 +646,8 @@ void updateDatabase()
 			int j,sum=0;
 			for (j=0; j<totalsize; j+=4) sum += *(unsigned int*)(&clone[i+j]);
 			if (sum != 0) continue;
+
+			counter++;
 
 			if(
 				editedBiosMicroCodeList[counter-1].cpuId!=*(unsigned int*)(&clone[i+12])
@@ -660,7 +666,8 @@ void updateDatabase()
 				||
 				editedBiosMicroCodeList[counter-1].dataSize!=*(unsigned int*)(&clone[i+28])
 				||
-				editedBiosMicroCodeList[counter-1].totalSize!=*(unsigned int*)(&clone[i+32])
+				//editedBiosMicroCodeList[counter-1].totalSize!=*(unsigned int*)(&clone[i+32])
+				editedBiosMicroCodeList[counter-1].totalSize!=totalsize
 				||
 				editedBiosMicroCodeList[counter-1].platformId!=*(unsigned int*)(&clone[i+24])
 				||
@@ -675,7 +682,8 @@ void updateDatabase()
 					editedBiosMicroCodeList[counter-1].dd=clone[i+10];
 					editedBiosMicroCodeList[counter-1].crc=*(unsigned int*)(&clone[i+16]);
 					editedBiosMicroCodeList[counter-1].dataSize=*(unsigned int*)(&clone[i+28]);
-					editedBiosMicroCodeList[counter-1].totalSize=*(unsigned int*)(&clone[i+32]);
+					//editedBiosMicroCodeList[counter-1].totalSize=*(unsigned int*)(&clone[i+32]);
+					editedBiosMicroCodeList[counter-1].totalSize=totalsize;
 					editedBiosMicroCodeList[counter-1].platformId=*(unsigned int*)(&clone[i+24]);
 					memcpy(editedBiosMicroCodeList[counter-1].data,clone+i,totalsize);
 					editedBiosMicroCodeList[counter-1].status=EDITED;
@@ -760,13 +768,7 @@ bool loadLib()
 			&& (buf[i+10]>=0x01 && buf[i+10]<=0x09 || buf[i+10]>=0x10 && buf[i+10]<=0x19 || buf[i+10]>=0x20 && buf[i+10]<=0x29 || buf[i+10]>=0x30 && buf[i+10]<=0x31)
 			&& (buf[i+11]>=0x01 && buf[i+11]<=0x09 || buf[i+11]>=0x10 && buf[i+11]<=0x12)) 
 		{
-			libCounter++;
-			printf("Entry No.%d\t",libCounter);
-
-			MicroCode tmp;
-
 			int totalsize = *(unsigned int*)(&buf[i+32]);
-
 			//printf("datasize=%d totalsize=%d\n", *(unsigned int*)(&buf[i+28]), totalsize);
 			if (totalsize == 0) totalsize = 2048;
 			if ((totalsize & 1023) != 0) continue;
@@ -774,6 +776,11 @@ bool loadLib()
 			int j,sum=0;
 			for (j=0; j<totalsize; j+=4) sum += *(unsigned int*)(&buf[i+j]);
 			if (sum != 0) continue;
+
+			libCounter++;
+			printf("Entry No.%d\t",libCounter);
+
+			MicroCode tmp;
 
 			printf("CPUID=%X\t",*(unsigned int*)(&buf[i+12]));									fprintf(logFp,"CPUID=%X\t",*(unsigned int*)(&buf[i+12]));
 			tmp.cpuId=*(unsigned int*)(&buf[i+12]);
@@ -790,11 +797,16 @@ bool loadLib()
 			printf("CRC=%08X  ",*(unsigned int*)(&buf[i+16]));									fprintf(logFp,"CRC=%08X  ",*(unsigned int*)(&buf[i+16]));
 			tmp.crc=*(unsigned int*)(&buf[i+16]);
 
-			printf("datasize=%d  ", *(unsigned int*)(&buf[i+28]));								fprintf(logFp,"datasize=%d  ", *(unsigned int*)(&buf[i+28]));
+			printf("datasize=%4d  ", *(unsigned int*)(&buf[i+28]));								fprintf(logFp,"datasize=%4d  ", *(unsigned int*)(&buf[i+28]));
 			tmp.dataSize=*(unsigned int*)(&buf[i+28]);
 
-			printf("total=%d  ",*(unsigned int*)(&buf[i+32]));									fprintf(logFp,"total=%d  ",*(unsigned int*)(&buf[i+32]));
-			tmp.totalSize=*(unsigned int*)(&buf[i+32]);
+			//printf("total=%4d  ",*(unsigned int*)(&buf[i+32]));								//fprintf(logFp,"total=%4d  ",*(unsigned int*)(&buf[i+32]));
+			//tmp.totalSize=*(unsigned int*)(&buf[i+32]);
+
+			//totalsize
+			printf("total=%4d  ",totalsize);									fprintf(logFp,"total=%4d  ",totalsize);
+			tmp.totalSize=totalsize;
+
 
 			printf("offset=%-8X  ",i);															fprintf(logFp,"offset=%-8x  ",i);
 
@@ -838,8 +850,8 @@ void showLib()
 		printf("Rev=%02X\t",microCodeLib[i].rev);
 		printf("%02X%02X/%02X/%02X  ",microCodeLib[i].yf, microCodeLib[i].yl, microCodeLib[i].mm, microCodeLib[i].dd);
 		printf("CRC=%08X  ",microCodeLib[i].crc);
-		printf("datasize=%d  ", microCodeLib[i].dataSize);
-		printf("total=%d  ",microCodeLib[i].totalSize);
+		printf("datasize=%4d  ", microCodeLib[i].dataSize);
+		printf("total=%4d  ",microCodeLib[i].totalSize);
 		printf("PlatformID=(%3d):",microCodeLib[i].platformId);
 			bool flag = false;
 			for (int j=0; j<=7; ++j)
