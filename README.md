@@ -1,7 +1,9 @@
 # Bios Intel microcode editor
-ver 1.4b 2017-02-09
+- I'm writing newer version for this tool with Linux support.The old version is too messy :| .
+
 
 # Warning
+
 * This program is based on "intelmicrocodelist" source code .
 * This tool is use to edit/swap intel cpu microcode in Phoenix bios file.
 * This tool cannot add or delete exsist microcode , it can only REPLACE exsist microcode with another microcode with the same size to keep the size of bios file unchanged.
