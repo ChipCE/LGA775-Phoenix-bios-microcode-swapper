@@ -1,16 +1,15 @@
-# Bios Intel microcode editor
-- I'm writing newer version for this tool with Linux support.The old version is too messy :| .
+# LGA775 Phoenix bios microcode swapper
+Simple tool to swap microcode of Phoenix based bios file.
 
 
 # Warning
 
 * This program is based on "intelmicrocodelist" source code .
-* This tool is use to edit/swap intel cpu microcode in Phoenix bios file.
-* This tool cannot add or delete exsist microcode , it can only REPLACE exsist microcode with another microcode with the same size to keep the size of bios file unchanged.
+* This tool is use to edit/swap intel cpu microcode in Phoenix based bios file.
+* This tool cannot add or delete exsist microcode , it can only SWAP exsist microcode with another microcode with the same size to keep the size of bios file unchanged.
 * Use with caution , always have your backup.
 
 # How to use 
-* you will need the original bios file that you need to edit and load it with option(1).
-* you will need the microcode lib you need to insert and load it with option (3).Microcode lib file can be something like "ncpucode-lga-771-775-microcode-cpuid-1067x-6Fx.bin" or another bios file.
-* replace original bios microcode with another microcode with the same size in the lib file  (5).
-* export edited bios with option(7).
+* compile microcode-swapper.cpp <code>g++ microcode-swapper.cpp -o microcode-swapper</code>
+* Run compiled file <code>./microcode-swapper</code> and follow the instructions.
+* Flash new bios.

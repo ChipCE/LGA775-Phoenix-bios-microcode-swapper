@@ -5,7 +5,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/bios-editor",
+            "program": "${workspaceFolder}/microcode-swapper",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
