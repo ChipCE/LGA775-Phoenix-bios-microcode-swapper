@@ -88,13 +88,13 @@ int main()
 	}
 	while(sourcePos<1 || sourcePos>lib.size());
 	
-	if(bios[destPos].totalSize != lib[sourcePos].totalSize)
+	if(bios[destPos-1].totalSize != lib[sourcePos-1].totalSize)
 	{
 		printf("Error : Source and destination MicroCodes are not the same size!\n");
 		return -1;
 	}
 	//skip the microcode with totalSize = 0
-	if((bios[destPos].totalSize == 0) || (lib[sourcePos].totalSize == 0))
+	if((bios[destPos-1].totalSize == 0) || (lib[sourcePos-1].totalSize == 0))
 	{
 		printf("Error : Source or destination MicroCodes are not safe to be swapped.\n");
 		return -1;
