@@ -21,12 +21,14 @@ typedef struct MICROCODE
 	unsigned int platformId;
 	unsigned int crc;
 	unsigned char *data;
+	int offset;
 }MicroCode;
 
-bool load(const char* fileName,std::vector<MicroCode> *vtr,unsigned int *binarySize);
+bool load(const char* fileName,std::vector<MicroCode> *vtr,unsigned int *binarySize,bool print);
 void listMicrocode(std::vector<MicroCode> *vtr);
 void showMicroCode(MicroCode microCode);
 bool swapMicroCode(MicroCode source,MicroCode dest,const char* fileName);
+bool verify(const char* originFileName);
 
 int main()
 {
@@ -44,7 +46,7 @@ int main()
 	//load bios
 	printf("Enter bios file path : ");
 	scanf("%s",biosName);
-	if(!load(biosName,&bios,&biosBinSize))
+	if(!load(biosName,&bios,&biosBinSize,true))
 	{
 		printf("Error : cannot open file %s.",biosName);
 		return -1;
@@ -57,7 +59,7 @@ int main()
 	//load lib
 	printf("Enter lib file path : ");
 	scanf("%s",libName);
-    if(!load(libName,&lib,&libBinSize))
+    if(!load(libName,&lib,&libBinSize,true))
 	{
 		printf("Error : cannot open file %s.",biosName);
 		return -1;
@@ -65,6 +67,7 @@ int main()
     if(DEBUG)
 		listMicrocode(&lib);
 
+	printf("\n");
 	// user input - slot entry
 	int destPos = 1;
 	do
@@ -75,8 +78,6 @@ int main()
 		scanf("%d",&destPos);
 	}
 	while (destPos<1 || destPos>bios.size());
-	
-	printf("\n");
 
 	int sourcePos = 1;
 	do
@@ -87,6 +88,8 @@ int main()
 		scanf("%d",&sourcePos);
 	}
 	while(sourcePos<1 || sourcePos>lib.size());
+
+	printf("\n");
 	
 	if(bios[destPos-1].totalSize != lib[sourcePos-1].totalSize)
 	{
@@ -113,31 +116,45 @@ int main()
 		printf("Exit!\n");
 		return 1;
 	}
+	printf("\n");
 
+	printf("Swapping microcode ...\n");
 	if(swapMicroCode(lib[sourcePos-1],bios[destPos-1],biosName))
 	{
-		printf("Completed!\n");
-		return 0;
+		printf("\nVerifying modified bios file...\n");
+		if(verify(biosName))
+		{
+			printf("Success!\n");
+			return 0;
+		}
+		else
+		{
+			printf("Failed!\n");
+			return -1;
+		}
 	}
 	else
 	{
-		printf("Error, Operation aborted");
+		printf("Operation aborted.\n");
 		return -1;
 	}
 }
 
-bool load(const char* fileName,std::vector<MicroCode> *vtr,unsigned int *binarySize)
+bool load(const char* fileName,std::vector<MicroCode> *vtr,unsigned int *binarySize,bool print)
 {
-	printf("Trying to load from %s.\n",fileName);
+	if(print)
+		printf("Trying to load from %s.\n",fileName);
 
 	FILE *filePointer;
 	if ((filePointer=fopen(fileName, "rb")) == NULL) 
 	{
-		printf("[Error] Cannot open file %s\n", fileName);
+		if(print)
+			printf("Error : Cannot open file %s\n", fileName);
 		return false;
 	}
     else
-	    printf("Loaded file : %s\n",fileName);
+	    if(print)
+			printf("Loaded file : %s\n",fileName);
 
 	//get bios size
 	int fsize;
@@ -174,38 +191,50 @@ bool load(const char* fileName,std::vector<MicroCode> *vtr,unsigned int *binaryS
 			if (sum != 0) continue;
 
 			entryCounter++;
-			printf("No.%d\t",entryCounter);
+			if(print)
+				printf("No.%d\t",entryCounter);
 
 			MicroCode tmp;
 
-			printf("CPUID=%X\t",*(unsigned int*)(&buf[i+12]));									
+			if(print)
+				printf("CPUID=%X\t",*(unsigned int*)(&buf[i+12]));									
 			tmp.cpuId=*(unsigned int*)(&buf[i+12]);
 
-			printf("Rev=%02X\t",*(unsigned int*)(&buf[i+4]));									
+			
+			if(print)
+				printf("Rev=%02X\t",*(unsigned int*)(&buf[i+4]));									
 			tmp.rev=*(unsigned int*)(&buf[i+4]);
 
-			printf("%02X%02X/%02X/%02X\t",buf[i+9], buf[i+8], buf[i+11], buf[i+10]);			
+			if(print)
+				printf("%02X%02X/%02X/%02X\t",buf[i+9], buf[i+8], buf[i+11], buf[i+10]);			
 			tmp.yf=buf[i+9];
 			tmp.yl=buf[i+8];
 			tmp.mm=buf[i+11];
 			tmp.dd=buf[i+10];
 
-			printf("CRC=%08X\t",*(unsigned int*)(&buf[i+16]));									
+			if(print)
+				printf("CRC=%08X\t",*(unsigned int*)(&buf[i+16]));									
 			tmp.crc=*(unsigned int*)(&buf[i+16]);
 
-			printf("datasize=%4d\t", *(unsigned int*)(&buf[i+28]));								
+			if(print)
+				printf("datasize=%4d\t", *(unsigned int*)(&buf[i+28]));								
 			tmp.dataSize=*(unsigned int*)(&buf[i+28]);
 			
             //totalsize							
 			tmp.totalSize=*(unsigned int*)(&buf[i+32]);
             if(tmp.totalSize==0)
-                printf("total=%4d*\t",totalsize);
+                if(print)
+					printf("total=%4d*\t",totalsize);
             else
-                printf("total=%4d\t",totalsize);
+                if(print)
+					printf("total=%4d\t",totalsize);
 
-			printf("offset=%-8X\t",i);															
+			if(print)
+				printf("offset=%-8X\t",i);
+			tmp.offset = i;															
 
-			printf("PlatformID=(%3d):",*(unsigned int*)(&buf[i+24]));							
+			if(print)
+				printf("PlatformID=(%3d):",*(unsigned int*)(&buf[i+24]));							
 			tmp.platformId=*(unsigned int*)(&buf[i+24]);	
 			bool flag = false;
 			for (int j=0; j<=7; ++j)
@@ -214,17 +243,21 @@ bool load(const char* fileName,std::vector<MicroCode> *vtr,unsigned int *binaryS
 				{
 					if (flag) 
 					{
-						printf(",");															
+						if(print)
+							printf(",");															
 					}
 					flag = true;
-					printf("%d", j);															
+					if(print)
+						printf("%d", j);															
 				}
 			}
-			printf("\n");																		
+			if(print)
+				printf("\n");																		
 
 			//save microcode data to node
 			tmp.data = new unsigned char [totalsize];
 			memcpy(tmp.data,buf+i,totalsize);
+
             vtr->push_back(tmp);
 		}
 	}
@@ -239,7 +272,6 @@ bool load(const char* fileName,std::vector<MicroCode> *vtr,unsigned int *binaryS
 
 void listMicrocode(std::vector<MicroCode> *vtr)
 {
-    printf("List microcode\n");
     int entryCounter = 0;	
     for (MicroCode microcode : *vtr) 
     {
@@ -247,7 +279,6 @@ void listMicrocode(std::vector<MicroCode> *vtr)
 		printf("No.%d\t",entryCounter);
 		showMicroCode(microcode);
     }
-    printf("done.\n\n");
 }
 
 void showMicroCode(MicroCode microCode)
@@ -282,7 +313,7 @@ bool swapMicroCode(MicroCode source,MicroCode dest,const char* fileName)
 	FILE *filePointer;
 	if ((filePointer=fopen(fileName, "rb")) == NULL) 
 	{
-		printf("[Error] Cannot open file %s\n", fileName);
+		printf("Error : Cannot open file %s\n", fileName);
 		return false;
 	}
     else
@@ -330,13 +361,12 @@ bool swapMicroCode(MicroCode source,MicroCode dest,const char* fileName)
 				dest.platformId==*(unsigned int*)(&buf[i+24])
 			)
 			{
-				printf("Found dest microcode at offset %-8X\n",i);
+				printf("Found microcode to be swapped at offset %-8X\n",i);
 				//swap microcode data
 				memcpy(buf+i,source.data,source.totalSize);
 
 				//output file name
-				char *outputFileName;
-				new unsigned char [strlen(fileName)+5];
+				char *outputFileName = new char [strlen(fileName)+5];
 				strcpy(outputFileName,fileName);
 				strcat(outputFileName,".out");
 
@@ -345,15 +375,68 @@ bool swapMicroCode(MicroCode source,MicroCode dest,const char* fileName)
 				outputWriter=fopen(outputFileName,"wb");
 				if(outputWriter==NULL)
 				{
-					printf("\n[error] Cannot create output file! \nOperation aborted!");
+					printf("Error : Cannot create output file! \nOperation aborted!");
 					return false;
 				}
-				printf("\nWrite %d bytes to output file : %s\n",fsize,outputFileName);
+				printf("Write %d bytes to output file : %s\n",fsize,outputFileName);
 				fwrite (buf ,1, fsize, outputWriter);
 				fclose(outputWriter);
 				return true;
 			}
 		}
+	}
+	printf("Error : Original bios file mismatch!\n");
+	return false;
+}
+
+bool verify(const char* originFileName)
+{
+	char *moddedFileName = new char [strlen(originFileName)+5];
+	strcpy(moddedFileName,originFileName);
+	strcat(moddedFileName,".out");
+
+	//load origin and modded files
+	std::vector<MicroCode> origin;
+	std::vector<MicroCode> modded;
+	unsigned int originSize;
+	unsigned int moddedSize;
+	if(load(originFileName,&origin,&originSize,false) && load(moddedFileName,&modded,&moddedSize,false))
+	{
+		if(originSize != moddedSize)
+		{
+			printf("Error : File size not matched!\n");
+			return false;
+		}
+
+		if(origin.size() != modded.size())
+		{
+			printf("Error : Number of microcodes not matched!\n");
+			return false;
+		}
+
+		int moddedMicrocode = 0;
+		for(int i=0;i< origin.size();i++)
+		{
+			if(
+				(origin[i].totalSize != modded[i].totalSize) ||
+				(origin[i].offset != modded[i].offset))
+			{
+				printf("Error : Microcode data structure error!\n");
+				return false;
+			}
+
+			if((origin[i].dataSize!=modded[i].dataSize) || (origin[i].crc!=modded[i].crc))
+				moddedMicrocode++;
+		}
+
+		if(moddedMicrocode != 1)
+		{
+			printf("Error : Ouput file has been occurred!\n");
+			return false;
+		}
+
+		listMicrocode(&modded);
+		return true;
 	}
 	return false;
 }
