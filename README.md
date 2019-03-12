@@ -10,6 +10,6 @@ Simple tool to swap microcode of Phoenix based bios file.
 * Use with caution , always have your backup.
 
 # How to use 
-* compile microcode-swapper.cpp <code>g++ microcode-swapper.cpp -o microcode-swapper</code>
+* compile the program with <code>make</code>
 * Run compiled file <code>./microcode-swapper</code> and follow the instructions.
 * Flash new bios.

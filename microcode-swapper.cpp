@@ -28,11 +28,20 @@ bool load(const char* fileName,std::vector<MicroCode> *vtr,unsigned int *binaryS
 void listMicrocode(std::vector<MicroCode> *vtr);
 void showMicroCode(MicroCode microCode);
 bool swapMicroCode(MicroCode source,MicroCode dest,const char* fileName);
-bool verify(const char* originFileName);
+bool verify(const char* originFileName,bool unsafe);
 
-int main()
+int main(int argc, char *argv[])
 {
 	setvbuf (stdout, NULL, _IONBF, 0);
+
+	bool unsafe = false;
+	if(argc > 1)
+		if(strcmp(argv[1],"-unsafe") == 0)
+		{
+			printf("Warning : Unsafe mode is enabled!\n");
+			unsafe = true;
+		}
+
 	//data
 	std::vector<MicroCode> bios;
 	std::vector<MicroCode> lib;
@@ -93,14 +102,20 @@ int main()
 	
 	if(bios[destPos-1].totalSize != lib[sourcePos-1].totalSize)
 	{
-		printf("Error : Source and destination MicroCodes are not the same size!\n");
-		return -1;
+		if(!unsafe)
+		{
+			printf("Error : Source and destination MicroCodes are not the same size!\n");
+			return -1;
+		}
 	}
 	//skip the microcode with totalSize = 0
 	if((bios[destPos-1].totalSize == 0) || (lib[sourcePos-1].totalSize == 0))
 	{
-		printf("Error : Source or destination MicroCodes are not safe to be swapped.\n");
-		return -1;
+		if(!unsafe)
+		{
+			printf("Error : Source or destination MicroCodes are not safe to be swapped.\n");
+			return -1;
+		}
 	}
 
 	//confirm dialog
@@ -122,7 +137,7 @@ int main()
 	if(swapMicroCode(lib[sourcePos-1],bios[destPos-1],biosName))
 	{
 		printf("\nVerifying modified bios file...\n");
-		if(verify(biosName))
+		if(verify(biosName,unsafe))
 		{
 			printf("Success!\n");
 			return 0;
@@ -222,12 +237,13 @@ bool load(const char* fileName,std::vector<MicroCode> *vtr,unsigned int *binaryS
 			
             //totalsize							
 			tmp.totalSize=*(unsigned int*)(&buf[i+32]);
-            if(tmp.totalSize==0)
-                if(print)
+            if(print)
+			{
+				if(tmp.totalSize == 0)
 					printf("total=%4d*\t",totalsize);
-            else
-                if(print)
+				else
 					printf("total=%4d\t",totalsize);
+			}
 
 			if(print)
 				printf("offset=%-8X\t",i);
@@ -389,7 +405,7 @@ bool swapMicroCode(MicroCode source,MicroCode dest,const char* fileName)
 	return false;
 }
 
-bool verify(const char* originFileName)
+bool verify(const char* originFileName,bool unsafe)
 {
 	char *moddedFileName = new char [strlen(originFileName)+5];
 	strcpy(moddedFileName,originFileName);
@@ -402,39 +418,41 @@ bool verify(const char* originFileName)
 	unsigned int moddedSize;
 	if(load(originFileName,&origin,&originSize,false) && load(moddedFileName,&modded,&moddedSize,false))
 	{
-		if(originSize != moddedSize)
+		if(!unsafe)
 		{
-			printf("Error : File size not matched!\n");
-			return false;
-		}
-
-		if(origin.size() != modded.size())
-		{
-			printf("Error : Number of microcodes not matched!\n");
-			return false;
-		}
-
-		int moddedMicrocode = 0;
-		for(int i=0;i< origin.size();i++)
-		{
-			if(
-				(origin[i].totalSize != modded[i].totalSize) ||
-				(origin[i].offset != modded[i].offset))
+			if(originSize != moddedSize)
 			{
-				printf("Error : Microcode data structure error!\n");
+				printf("Error : File size not matched!\n");
 				return false;
 			}
 
-			if((origin[i].dataSize!=modded[i].dataSize) || (origin[i].crc!=modded[i].crc))
-				moddedMicrocode++;
-		}
+			if(origin.size() != modded.size())
+			{
+				printf("Error : Number of microcodes not matched!\n");
+				return false;
+			}
 
-		if(moddedMicrocode != 1)
-		{
-			printf("Error : Ouput file has been occurred!\n");
-			return false;
-		}
+			int moddedMicrocode = 0;
+			for(int i=0;i< origin.size();i++)
+			{
+				if(
+					(origin[i].totalSize != modded[i].totalSize) ||
+					(origin[i].offset != modded[i].offset))
+				{
+					printf("Error : Microcode data structure error!\n");
+					return false;
+				}
 
+				if((origin[i].dataSize!=modded[i].dataSize) || (origin[i].crc!=modded[i].crc))
+					moddedMicrocode++;
+			}
+
+			if(moddedMicrocode != 1)
+			{
+				printf("Error : Ouput file has been occurred!\n");
+				return false;
+			}
+		}
 		listMicrocode(&modded);
 		return true;
 	}
